@@ -13,8 +13,10 @@
 
 import Notes from './Notes'
 import Note from './Note'
+import NotesConnect from './NotesConnect'
 
 export {
   Notes,
-  Note
+  Note,
+  NotesConnect
 }

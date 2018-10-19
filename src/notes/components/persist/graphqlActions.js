@@ -23,6 +23,14 @@ const UpdateTodo = `mutation updateTodo($id: ID!, $note: String, $done: Boolean)
   }
 }`;
 
+const SubscribeTodosCreate = `subscription OnCreateTodo {
+  onCreateTodo {
+    id
+    note
+    done
+  }
+}`
+
 const DeleteTodo = `mutation DeleteTodo($id: ID!) {
   deleteTodo(input: {id: $id}) {
     id
@@ -34,5 +42,6 @@ export {
   CreateTodo,
   ListTodos,
   UpdateTodo,
-  DeleteTodo
+  DeleteTodo,
+  SubscribeTodosCreate
 }

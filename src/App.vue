@@ -24,7 +24,7 @@ import Menu from '@/components/Menu';
 
 Vue.component('v-menu', Menu)
 
-window.LOG_LEVEL = 'VERBOSE';
+// window.LOG_LEVEL = 'VERBOSE';
 
 export default {
   name: 'app'

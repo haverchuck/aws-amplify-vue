@@ -14,7 +14,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import { Menu, Home, Profile } from '@/components';
-import { Notes } from '@/notes';
+import { Notes, NotesConnect } from '@/notes';
 import { components, AmplifyEventBus } from 'aws-amplify-vue';
 import Amplify, * as AmplifyModules from 'aws-amplify';
 import { AmplifyPlugin } from 'aws-amplify-vue';
@@ -29,6 +29,33 @@ let user;
 getUser().then((user, error) => {
   if (user) {
     router.push({path: '/'})
+  }
+})
+
+Vue.prototype.$Amplify.Analytics.autoTrack('pageView', {
+  enable: true,
+  eventName: 'pageView',
+  // OPTIONAL, the attributes of the event, you can either pass an object or a function 
+  // which allows you to define dynamic attributes
+  attributes: {
+      attr: 'attr'
+  },
+  // when using function
+  // attributes: () => {
+  //    const attr = somewhere();
+  //    return {
+  //        myAttr: attr
+  //    }
+  // },
+  // OPTIONAL, by default is 'multiPageApp'
+  // you need to change it to 'SPA' if your app is a single-page app like React
+  type: 'SPA',
+  // OPTIONAL, the service provider, by default is the AWS Pinpoint
+  provider: 'AWSPinpoint',
+  // OPTIONAL, to get the current page url
+  getUrl: () => {
+      // the default function
+      return window.location.origin + window.location.pathname;
   }
 })
 
@@ -57,6 +84,7 @@ function getUser() {
 }
 
 const router = new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
@@ -67,7 +95,7 @@ const router = new Router({
     {
       path: '/notes',
       name: 'Notes',
-      component: Notes,
+      component: NotesConnect,
       params: {
         'foo': 'bar'
       },
@@ -88,7 +116,21 @@ const router = new Router({
     {
       path: '/auth',
       name: 'Authenticator',
-      component: components.Authenticator
+      component: components.Authenticator,
+      props: {
+        authOptions: {
+          signUpConfig: {
+            header: 'did i get passed?',
+            signUpFields: [
+              {
+                label: 'Address',
+                key: 'address',
+                type: 'string',
+              }
+            ]
+          }
+        }
+      }
     }
   ]
 });
@@ -108,5 +150,6 @@ router.beforeResolve(async (to, from, next) => {
   }
   return next()
 })
+
 
 export default router

@@ -14,12 +14,17 @@
 <template>
   <div :style="theme.container">
     <h2 :style="theme.header">Notes</h2>
-    <input
-      :style="theme.input"
-      autofocus
-      v-model="note"
-      v-on:keyup.enter="create"
-    />
+    <amplify-connect :mutation="createTodoMutation"
+        @done="onCreateFinished">
+      <template slot-scope="{ loading, mutate, errors }">
+        <input
+          :style="theme.input"
+          autofocus
+          v-model="note"
+          v-on:keyup.enter="mutate"
+        />
+      </template>
+    </amplify-connect>
     <ul :style="theme.list">
       <a-note
         v-for="todo in todos"
@@ -49,12 +54,14 @@ Vue.component('a-note', Note)
 
 export default {
   name: 'Notes',
+  props: ['notes'],
   data () {
     return {
       theme: NotesTheme || {},
       note: '',
       todos: [],
       filter: 'all',
+      graph: null,
       logger: {},
       actions: {
         create: CreateTodo,
@@ -66,10 +73,14 @@ export default {
   },
   created() {
     this.logger = new this.$Amplify.Logger('NOTES_component')
-    this.list();
+    this.graph = this.$Amplify.graphqlOperation;
+    this.todos = this.notes;
   },
   computed: {
-    userId: function() { return AmplifyStore.state.userId }
+    userId: function() { return AmplifyStore.state.userId },
+    createTodoMutation() {
+      return this.graph(this.actions.create, {note: this.note, done: true});
+    }
   },
   methods: {
     list() {
@@ -102,16 +113,9 @@ export default {
         this.logger.error(`Error removing Todo ${id}`, e)
       })
     },
-    create() {
-      this.$Amplify.API.graphql(this.$Amplify.graphqlOperation(this.actions.create, {note: this.note, done: true}))
-      .then((res) => {
-        this.logger.info(`Todo created`, res);
-        this.list();
-        this.note = '';
-      })
-      .catch((e) => {
-        this.logger.error(`Error creating Todo`, e)
-      })
+    onCreateFinished() {
+      this.note = '';
+      console.log('Todo created from connect mutation!');
     }
   }
 }
